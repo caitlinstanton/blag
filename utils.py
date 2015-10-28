@@ -91,11 +91,24 @@ def getCommentsOnPost(idp):
     return result
 
 def getComment(cid):
+    connection = MongoClient()
+    db = connection['data']
+    res = db.comments.find({'cid':cid})
+    userID = res[0]['uid']
+    userRes = db.users.find({'uid':userID})
+    username = userRes[0]['name']
+    commentInfo = []
+    for field in res[0]:
+        commentInfo.append(field)
+    commentInfo.append(username)
+    return commentInfo
+    """
     conn = sqlite3.connect('data.db')
     cur = conn.cursor()
     q = "SELECT comments.*,users.name FROM comments, users WHERE comments.cid = %d AND users.id = comments.uid"
     result = cur.execute(q%cid).fetchone()
     return result
+    """
 
 def getUserPosts(idu):
     connection = MongoClient()
