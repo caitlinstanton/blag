@@ -5,9 +5,6 @@ from pymongo import MongoClient
 
 # All methods should be rewritten using mongo instead of SQLite
 
-connection = MongoClient()
-db = connection['data']
-
 #----------------------------------Writing--------------------------------
 
 def writePost(title, txt, idu):
@@ -101,10 +98,12 @@ def getComment(cid):
     return result
 
 def getUserPosts(idu):
+    connection = MongoClient()
+    db = connection['data']
     res = db.posts.find({'uid':idu})
     posts = []
-    for i in res:
-        posts.append(i)
+    for doc in res:
+        posts.append(doc)
     return posts
     """
     conn = sqlite3.connect('data.db')
@@ -134,10 +133,12 @@ def getAllPosts():
     return all_rows
 
 def getAllUsers():
-    res = db.users.find({}, {'name':true})
+    connection = MongoClient()
+    db = connection['data']
+    res = db.users.find()
     all_rows = []
-    for i in res:
-        all_rows.append(i)
+    for doc in res:
+        all_rows.append(doc['name'])
     return all_rows
     """
     conn = sqlite3.connect('data.db')
@@ -151,8 +152,11 @@ def getAllUsers():
     """
 
 def getProfile(uid):
-    res = db.users.find({'id':uid}, {'name':true, 'filename':true, 'age':true, 'color':true})
-    return res.next()
+    connection = MongoClient()
+    db = connection['data']
+    res = db.users.find({'id':uid})
+    profile = [res[0]['name'], res[0]['filename'], res[0]['age'], res[0]['color']]
+    return profile
     """
     conn = sqlite3.connect('data.db')
     cur = conn.cursor()
