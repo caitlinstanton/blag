@@ -95,7 +95,7 @@ def getComment(cid):
     db = connection['data']
     res = db.comments.find({'cid':cid})
     userID = res[0]['uid']
-    userRes = db.users.find({'uid':userID})
+    userRes = db.users.find({'id':userID})
     username = userRes[0]['name']
     commentInfo = []
     for field in res[0]:
@@ -136,6 +136,17 @@ def getPost(idp):
     return result
 
 def getAllPosts():
+    connection = MongoClient()
+    db = connection['data']
+    res = db.posts.find().sort({'pid':-1})
+    all_rows = []
+    for doc in res:
+        userID = doc['uid']
+        resUser = db.user.find({'id':userID})
+        row = [doc['content'], doc['pid'], doc['uid'], resUser[0]['name'], doc['title'], datetime(doc['time'], 'localtime'), resUser[0]['filename']]
+        all_rows.append(row)
+    return all_rows
+    """
     conn = sqlite3.connect('data.db')
     cur = conn.cursor()
     q = "SELECT posts.content,posts.pid,posts.uid,users.name,posts.title,datetime(posts.time,'localtime'),users.filename FROM posts, users WHERE users.id = posts.uid ORDER BY posts.pid DESC"
@@ -144,6 +155,7 @@ def getAllPosts():
     print all_rows
     conn.commit()
     return all_rows
+    """
 
 def getAllUsers():
     connection = MongoClient()
