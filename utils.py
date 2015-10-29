@@ -128,12 +128,27 @@ def getUserPosts(idu):
     """
 
 def getPost(idp):
+    connection = MongoClient()
+    db = connection['data']
+    res = db.posts.find({'pid':idp})
+    userID = res[0]['uid']
+    userRes = db.users.find({'id':userID})
+    username = userRes[0]['name']
+    userfilename = userRes[0]['filename']
+    postInfo = []
+    for field in res[0]:
+        postInfo.append(field)
+    postInfo.append(username)
+    postInfo.append(userfilename)
+    return postInfo
+    """
     conn = sqlite3.connect('data.db')
     cur = conn.cursor()
     q = "SELECT posts.*,users.name,users.filename FROM posts,users WHERE posts.pid = %d AND posts.uid = users.id"
     result = cur.execute(q%idp).fetchone()
     conn.commit()
     return result
+    """
 
 def getAllPosts():
     connection = MongoClient()
