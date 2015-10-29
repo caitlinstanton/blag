@@ -188,14 +188,14 @@ def encrypt(word):
     return hashp.hexdigest()
 
 def authenticate(username,password):
-    conn = sqlite3.connect('data.db')
-    cur = conn.cursor()
-    q = 'SELECT users.password FROM users WHERE users.name = "%s"'
-    result = cur.execute(q%username)
+    #Need to change this to work with mongo
+    q = db.find(
+        {'uname':username} #change uname based on what we call the username category in the dictionary
+    )
+    result = cur.execute(q%username) #need to figure this part out
     for r in result:
         if(encrypt(password) == r[0]):
             return True
-    conn.commit()
     return False
 
 def getUserId(name):
