@@ -94,7 +94,8 @@ def delete(pid=0,cid=0):
 def user(username=""):
         error=""
         profile = []
-        if username == "":
+        if usersession() == "":
+		
                 return redirect("/login")
         else:
                 if request.method == 'POST':
