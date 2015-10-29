@@ -8,8 +8,9 @@ from pymongo import MongoClient
 #----------------------------------Writing--------------------------------
 
 def writePost(title, txt, idu):
-    db.title.insert_one(
+    db.posts.insert_one(
         {
+            "title" :title
             "text": txt
             "ID": idu
         }
@@ -24,8 +25,9 @@ def writePost(title, txt, idu):
     return idp + 1
 
 def writeComment(txt, idu, idp):
-    db.idp.insert_one( #make sure this will write to the post with idp and not create a new collection
+    db.comments.insert_one( #make sure this will write to the post with idp and not create a new collection
         {
+            "idp": idp
             "text": txt
             "ID": idp
         }
