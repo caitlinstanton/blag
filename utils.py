@@ -82,13 +82,24 @@ def deletePost(idp):
 #----------------------------------Getting--------------------------------
 
 def getCommentsOnPost(idp):
-    db.find( #not right, fix this - find should be the command tho, needs to be changed so it takes comments from post with idp.
-        {idp}
-    )
+    connection = MongoClient()
+    db = connection['data']
+    res = db.comments.find({'pid':idp})
+    all_rows = []
+    for doc in res:
+        userID = doc['uid']
+        resUser = db.users.find({'id':userID})
+        row = [doc['content'], datetime(doc['time'], 'localtime'), resUser[0]['name'], doc['cid'], resUser[0]['filename']]
+        all_rows.append(row)
+    return all_rows
+    """
+    conn = sqlite3.connect('data.db')
+    cur = conn.cursor()
     q = "SELECT comments.content,datetime(comments.time,'localtime'),users.name,comments.cid,users.filename FROM comments, users WHERE comments.pid = %d AND users.id = comments.uid"
     result = cur.execute(q%idp).fetchall()
     conn.commit()
     return result
+    """
 
 def getComment(cid):
     connection = MongoClient()
