@@ -1,31 +1,42 @@
 import sqlite3,hashlib
+from pymongo import MongoClient
+
+#Liam is pulling this
+
+# All methods should be rewritten using mongo instead of SQLite
 
 #----------------------------------Writing--------------------------------
 
 def writePost(title, txt, idu):
-    conn = sqlite3.connect('data.db')
-    cur = conn.cursor()
+    db.title.insert_one(
+        {
+            "text": txt
+            "ID": idu
+        }
+    )
     q = "SELECT MAX(pid) FROM posts"
-    idp = cur.execute(q).fetchone()[0]
+    idp = cur.execute(q).fetchone()[0] #idp is the post id, figure out how to implement it
     if idp == None:
         idp = 0
     print idp+1
     q = "INSERT INTO posts(title,content,uid,pid) VALUES(?,?,?,?)"
     cur.execute(q,(title,txt,idu,idp+1))
-    conn.commit()
     return idp + 1
 
 def writeComment(txt, idu, idp):
-    conn = sqlite3.connect('data.db')
-    cur = conn.cursor()
+    db.idp.insert_one( #make sure this will write to the post with idp and not create a new collection
+        {
+            "text": txt
+            "ID": idp
+        }
+    )
     q = "SELECT MAX(cid) FROM comments"
     idc = cur.execute(q).fetchone()[0]
-    if idc == None:
+    if idc == None: #idc is the comment id, figure out how to implement it
         idc = 0
-    print idc+1
+    #print idc+1
     q = "INSERT INTO comments(content,cid,pid,uid) VALUES(?,?,?,?)"
     cur.execute(q,(txt,idc+1,idp,idu))
-    conn.commit()
 
 def writeProfile(idu, filename, age, color):
     conn = sqlite3.connect('data.db')
@@ -41,13 +52,10 @@ def writeProfile(idu, filename, age, color):
     
 #----------------------------------Deleting-------------------------------
 
-def deleteComment(idc):
-    conn = sqlite3.connect('data.db')
-    cur = conn.cursor()
-    deleteCommentH(idc)
-    q = "UPDATE comments SET cid = cid-1 WHERE cid > %d"
-    cur.execute(q%idc)    
-    conn.commit()
+def deleteComment({idc}):
+    client = MongoClient()
+    db = client.data
+    result = db.test.delete_one({idc})
 
 def deleteCommentH(idc):
     conn = sqlite3.connect('data.db')
@@ -74,27 +82,50 @@ def deletePost(idp):
 #----------------------------------Getting--------------------------------
 
 def getCommentsOnPost(idp):
-    conn = sqlite3.connect('data.db')
-    cur = conn.cursor()
+    db.find( #not right, fix this - find should be the command tho, needs to be changed so it takes comments from post with idp.
+        {idp}
+    )
     q = "SELECT comments.content,datetime(comments.time,'localtime'),users.name,comments.cid,users.filename FROM comments, users WHERE comments.pid = %d AND users.id = comments.uid"
     result = cur.execute(q%idp).fetchall()
     conn.commit()
     return result
 
 def getComment(cid):
+    connection = MongoClient()
+    db = connection['data']
+    res = db.comments.find({'cid':cid})
+    userID = res[0]['uid']
+    userRes = db.users.find({'uid':userID})
+    username = userRes[0]['name']
+    commentInfo = []
+    for field in res[0]:
+        commentInfo.append(field)
+    commentInfo.append(username)
+    return commentInfo
+    """
     conn = sqlite3.connect('data.db')
     cur = conn.cursor()
     q = "SELECT comments.*,users.name FROM comments, users WHERE comments.cid = %d AND users.id = comments.uid"
     result = cur.execute(q%cid).fetchone()
     return result
+    """
 
 def getUserPosts(idu):
+    connection = MongoClient()
+    db = connection['data']
+    res = db.posts.find({'uid':idu})
+    posts = []
+    for doc in res:
+        posts.append(doc)
+    return posts
+    """
     conn = sqlite3.connect('data.db')
     cur = conn.cursor()
     q = "SELECT * FROM posts WHERE posts.uid = %d"
     result = cur.execute(q%idu).fetchall()
     conn.commit()
     return result
+    """
 
 def getPost(idp):
     conn = sqlite3.connect('data.db')
@@ -115,16 +146,31 @@ def getAllPosts():
     return all_rows
 
 def getAllUsers():
+    connection = MongoClient()
+    db = connection['data']
+    res = db.users.find()
+    all_rows = []
+    for doc in res:
+        all_rows.append(doc['name'])
+    return all_rows
+    """
     conn = sqlite3.connect('data.db')
     cur = conn.cursor()
     q = "SELECT users.name FROM users"
     cur.execute(q)
     all_rows = cur.fetchall()
-    print all_rows
+    #print all_rows
     conn.commit()
     return all_rows
+    """
 
 def getProfile(uid):
+    connection = MongoClient()
+    db = connection['data']
+    res = db.users.find({'id':uid})
+    profile = [res[0]['name'], res[0]['filename'], res[0]['age'], res[0]['color']]
+    return profile
+    """
     conn = sqlite3.connect('data.db')
     cur = conn.cursor()
     q = 'SELECT name,filename,age,color FROM users WHERE users.id = %d'
@@ -132,6 +178,7 @@ def getProfile(uid):
     row = cur.fetchone()
     conn.commit()
     return row
+    """
 
 #----------------------------------Log In---------------------------------
     
@@ -152,6 +199,12 @@ def authenticate(username,password):
     return False
 
 def getUserId(name):
+    res = db.users.find({'name':name}, {'id':true})
+    if res == None:
+        return None
+    else:
+        return res.next()
+    """
     conn = sqlite3.connect('data.db')
     cur = conn.cursor()
     q = 'SELECT users.id FROM users WHERE users.name = "%s"'
@@ -160,14 +213,19 @@ def getUserId(name):
     if result==None:
         return None
     return result[0]
+    """
 
 def getUserName(uid):
+    res = db.users.find({'id':uid}, {'name':true})
+    return res.next()
+    """
     conn = sqlite3.connect('data.db')
     cur = conn.cursor()
     q = 'SELECT users.name FROM users WHERE users.id = %d'
     result = cur.execute(q%uid).fetchone()
     conn.commit()
     return result[0]
+    """
 
 def addUser(username,password):
     conn = sqlite3.connect('data.db')
@@ -181,7 +239,7 @@ def addUser(username,password):
             uid=0
         q = 'INSERT INTO users VALUES (?, ?, ?,-1,-1,"","")'
         cur.execute(q, (username, encrypt(password), uid+1))
-        print str(uid+1)+","+username
+        #print str(uid+1)+","+username
         conn.commit()
         return True
     conn.commit()
