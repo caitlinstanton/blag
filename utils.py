@@ -56,8 +56,8 @@ def writeProfile(idu, filename, age, color):
 
 def deleteComment({idc}):
     client = MongoClient()
-    db = client.data
-    result = db.test.delete_one({idc})
+    db = client.comments
+    result = db.comments.delete_one({idc})
 
 def deleteCommentH(idc):
     conn = sqlite3.connect('data.db')
@@ -67,8 +67,8 @@ def deleteCommentH(idc):
     conn.commit()
 
 def deletePost(idp):
-    conn = sqlite3.connect('data.db')
-    cur = conn.cursor()
+    client = MongoClient()
+    db = client.posts
     q = "SELECT comments.cid FROM comments WHERE comments.pid = %d"
     bad = cur.execute(q%idp).fetchall()
     for comment in bad:
