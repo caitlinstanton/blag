@@ -7,6 +7,10 @@ from pymongo import MongoClient
 
 #----------------------------------Writing--------------------------------
 
+connection = MongoClient()
+
+db = connection['blag']
+
 def writePost(title, txt, idu):
     db.posts.insert_one(
         {
@@ -15,14 +19,14 @@ def writePost(title, txt, idu):
             "ID": idu,
         }
     )
-    q = "SELECT MAX(pid) FROM posts"
-    idp = cur.execute(q).fetchone()[0] #idp is the post id, figure out how to implement it
-    if idp == None:
-        idp = 0
-    print idp+1
-    q = "INSERT INTO posts(title,content,uid,pid) VALUES(?,?,?,?)"
-    cur.execute(q,(title,txt,idu,idp+1))
-    return idp + 1
+    #q = "SELECT MAX(pid) FROM posts"
+    #idp = cur.execute(q).fetchone()[0] #idp is the post id, figure out how to implement it
+    #if idp == None:
+    #3    idp = 0
+    #print idp+1
+    #q = "INSERT INTO posts(title,content,uid,pid) VALUES(?,?,?,?)"
+    #cur.execute(q,(title,txt,idu,idp+1))
+    #return idp + 1
 
 def writeComment(txt, idu, idp):
     db.comments.insert_one( #make sure this will write to the post with idp and not create a new collection
@@ -32,13 +36,13 @@ def writeComment(txt, idu, idp):
             "ID": idp,
         }
     )
-    q = "SELECT MAX(cid) FROM comments"
-    idc = cur.execute(q).fetchone()[0]
-    if idc == None: #idc is the comment id, figure out how to implement it
-        idc = 0
+    #q = "SELECT MAX(cid) FROM comments"
+    #idc = cur.execute(q).fetchone()[0]
+    #if idc == None: #idc is the comment id, figure out how to implement it
+    #    idc = 0
     #print idc+1
-    q = "INSERT INTO comments(content,cid,pid,uid) VALUES(?,?,?,?)"
-    cur.execute(q,(txt,idc+1,idp,idu))
+    #q = "INSERT INTO comments(content,cid,pid,uid) VALUES(?,?,?,?)"
+    #cur.execute(q,(txt,idc+1,idp,idu))
 
 def writeProfile(idu, filename, age, color):
     db.users.insert_one({
@@ -47,19 +51,19 @@ def writeProfile(idu, filename, age, color):
         "age": age,
         "color": color,
        } )
-    cur = conn.cursor()
-    q = "UPDATE users SET age = ?, color = ?, filename = ? WHERE id = ?"
-    cur.execute(q,(age,color,filename,idu))
-    '''q = "SELECT picid from users where id = %d"
-    idpic = cur.execute(q%idu).fetchone()[0]
-    print idpic
-    q = "UPDATE pics SET filename = ? WHERE id = ?"
-    cur.execute(q,(filename,idpic))'''
-    conn.commit()
+    #cur = conn.cursor()
+    #q = "UPDATE users SET age = ?, color = ?, filename = ? WHERE id = ?"
+    #cur.execute(q,(age,color,filename,idu))
+    #'''q = "SELECT picid from users where id = %d"
+    #idpic = cur.execute(q%idu).fetchone()[0]
+    #print idpic
+    #q = "UPDATE pics SET filename = ? WHERE id = ?"
+    #cur.execute(q,(filename,idpic))'''
+    #conn.commit()
     
 #----------------------------------Deleting-------------------------------
 
-def deleteComment({idc}):
+'''def deleteComment({idc}):
     client = MongoClient()
     db = client.comments
     result = db.comments.delete_one({idc})
@@ -289,3 +293,4 @@ def addUser(username,password):
         return True
     conn.commit()
     return False
+'''
