@@ -73,17 +73,31 @@ def writeProfile(idu, filename, age, color):
     
 #----------------------------------Deleting-------------------------------
 
-def deleteComment({idc}):
-    client = MongoClient()
-    db = client.comments
-    result = db.comments.delete_one({idc})
+def deleteComment(idc):
+    connection = MongoClient()
+    db = connection['data']
+    deleteCommentH(idc)
+    db.comments.update({'cid':{$gt:idc}}, {$set:{$inc:{'cid':-1}}})
+    """
+    conn = sqlite3.connect('data.db')
+    cur = conn.cursor()
+    deleteCommentH(idc)
+    q = "UPDATE comments SET cid = cid-1 WHERE cid > %d"
+    cur.execute(q%idc)    
+    conn.commit()
+    """
 
 def deleteCommentH(idc):
+    connection = MongoClient()
+    db = connection['data']
+    db.comments.remove({'cid':idc})
+    """
     conn = sqlite3.connect('data.db')
     cur = conn.cursor()
     q = "DELETE FROM comments WHERE comments.cid = %d"
     cur.execute(q%idc)
     conn.commit()
+    """
 
 def deletePost(idp):
     client = MongoClient()
