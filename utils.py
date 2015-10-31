@@ -286,6 +286,22 @@ def getUserName(uid):
     """
 
 def addUser(username,password):
+    connection = MongoClient()
+    db = connection['data']
+    res = db.users.find({'name':username})
+    if count(res) == 0:
+        users = db.users.find()
+        IDs = []
+        for doc in res:
+            IDs.append(doc['id'])
+        if len(IDs) == 0:
+            uid = 0
+        else:
+            uid = max(IDs)
+        db.users.insert({'name':username, 'password':encrypt(password), 'id': uid+1, 'picid':-1, 'age':-1, 'color':'', 'filename':''})
+        return True
+    return False
+    """
     conn = sqlite3.connect('data.db')
     cur = conn.cursor()
     q = 'SELECT users.name FROM users WHERE users.name = ?'
@@ -302,3 +318,4 @@ def addUser(username,password):
         return True
     conn.commit()
     return False
+    """
