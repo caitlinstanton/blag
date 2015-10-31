@@ -239,11 +239,13 @@ def authenticate(username,password):
     return False
 
 def getUserId(name):
-    res = db.users.find({'name':name}, {'id':true})
-    if res == None:
+    connection = MongoClient()
+    db = connection['data']
+    res = db.users.find({'name':name})
+    if count(res) == 0:
         return None
     else:
-        return res.next()
+        return res[0]['id']
     """
     conn = sqlite3.connect('data.db')
     cur = conn.cursor()
@@ -256,8 +258,10 @@ def getUserId(name):
     """
 
 def getUserName(uid):
-    res = db.users.find({'id':uid}, {'name':true})
-    return res.next()
+    connection = MongoClient()
+    db = connection['data']
+    res = db.users.find({'id':uid})
+    return res[0]['name']
     """
     conn = sqlite3.connect('data.db')
     cur = conn.cursor()
