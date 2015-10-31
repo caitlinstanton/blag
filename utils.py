@@ -10,9 +10,9 @@ from pymongo import MongoClient
 def writePost(title, txt, idu):
     db.posts.insert_one(
         {
-            "title" :title
-            "text": txt
-            "ID": idu
+            "title" :title,
+            "text": txt,
+            "ID": idu,
         }
     )
     q = "SELECT MAX(pid) FROM posts"
@@ -27,9 +27,9 @@ def writePost(title, txt, idu):
 def writeComment(txt, idu, idp):
     db.comments.insert_one( #make sure this will write to the post with idp and not create a new collection
         {
-            "idp": idp
-            "text": txt
-            "ID": idp
+            "idp": idp,
+            "text": txt,
+            "ID": idp,
         }
     )
     q = "SELECT MAX(cid) FROM comments"
@@ -41,7 +41,12 @@ def writeComment(txt, idu, idp):
     cur.execute(q,(txt,idc+1,idp,idu))
 
 def writeProfile(idu, filename, age, color):
-    conn = sqlite3.connect('data.db')
+    db.users.insert_one({
+        "idu": idu,
+        "filename": filename,
+        "age": age,
+        "color": color,
+       } )
     cur = conn.cursor()
     q = "UPDATE users SET age = ?, color = ?, filename = ? WHERE id = ?"
     cur.execute(q,(age,color,filename,idu))
