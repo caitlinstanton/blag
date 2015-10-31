@@ -77,7 +77,7 @@ def deleteComment(idc):
     connection = MongoClient()
     db = connection['data']
     deleteCommentH(idc)
-    db.comments.update({'cid':{$gt:idc}}, {$set:{$inc:{'cid':-1}}})
+    db.comments.update({'cid':{$gt:idc}}, {$inc:{'cid':-1}}, {multi:True})
     """
     conn = sqlite3.connect('data.db')
     cur = conn.cursor()
@@ -100,8 +100,21 @@ def deleteCommentH(idc):
     """
 
 def deletePost(idp):
-    client = MongoClient()
-    db = client.posts
+    connection = MongoClient()
+    db = connection['data']
+    res = db.comments.find({'pid':idp})
+    for comment in res:
+        deleteCommentH(comment['cid'])
+    allComments = db.comments.find()
+    i = 0
+    while i < count(allComments):
+        db.comments.update({'cid':allComments[i]['cid']}, {$set:{'cid':i}})
+        i += 1
+    db.posts.remove({'pid':idp})
+    db.posts.update({'pid':{$gt:idp}}, {$inc:{'pid':-1}}, {multi:True})
+    """
+    conn = sqlite3.connect('data.db')
+    cur = conn.cursor()
     q = "SELECT comments.cid FROM comments WHERE comments.pid = %d"
     bad = cur.execute(q%idp).fetchall()
     for comment in bad:
@@ -113,6 +126,7 @@ def deletePost(idp):
     q = "UPDATE posts SET pid = pid-1 WHERE pid > %d"
     cur.execute(q%idp)    
     conn.commit()
+    """
 
 #----------------------------------Getting--------------------------------
 
