@@ -233,15 +233,24 @@ def encrypt(word):
     return hashp.hexdigest()
 
 def authenticate(username,password):
-    #Need to change this to work with mongo
-    q = db.find(
-        {'uname':username} #change uname based on what we call the username category in the dictionary
-    )
-    result = cur.execute(q%username) #need to figure this part out
+    connection = MongoClient()
+    db = connection['data']
+    res = db.users.find({'name':username})
+    for doc in res:
+        if encrypt(password) == doc['password']:
+            return True
+    return False
+    """
+    conn = sqlite3.connect('data.db')
+    cur = conn.cursor()
+    q = 'SELECT users.password FROM users WHERE users.name = "%s"'
+    result = cur.execute(q%username)
     for r in result:
         if(encrypt(password) == r[0]):
             return True
+    conn.commit()
     return False
+    """
 
 def getUserId(name):
     connection = MongoClient()
@@ -288,7 +297,7 @@ def addUser(username,password):
             uid=0
         q = 'INSERT INTO users VALUES (?, ?, ?,-1,-1,"","")'
         cur.execute(q, (username, encrypt(password), uid+1))
-        #print str(uid+1)+","+username
+        print str(uid+1)+","+username
         conn.commit()
         return True
     conn.commit()
