@@ -60,21 +60,16 @@ def writeComment(txt, idu, idp):
     """
 
 def writeProfile(idu, filename, age, color):
-    db.users.insert_one({
-        "idu": idu,
-        "filename": filename,
-        "age": age,
-        "color": color,
-       } )
+    connection = MongoClient()
+    db = connection['data']
+    db.students.update({'id':idu}, {$set: {'age':age, 'color':color, 'filename':filename}})
+    """
+    conn = sqlite3.connect('data.db')
     cur = conn.cursor()
     q = "UPDATE users SET age = ?, color = ?, filename = ? WHERE id = ?"
     cur.execute(q,(age,color,filename,idu))
-    '''q = "SELECT picid from users where id = %d"
-    idpic = cur.execute(q%idu).fetchone()[0]
-    print idpic
-    q = "UPDATE pics SET filename = ? WHERE id = ?"
-    cur.execute(q,(filename,idpic))'''
     conn.commit()
+    """
     
 #----------------------------------Deleting-------------------------------
 
