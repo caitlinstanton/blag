@@ -1,0 +1,24 @@
+The columns for each of the three tables (the columns listed in create.py are incomplete)
+
+USERS:
+name
+password
+id
+picid
+age
+color
+filename
+
+POSTS:
+title
+content
+uid
+pid
+time
+
+COMMENTS:
+content
+cid
+pid
+uid
+time
