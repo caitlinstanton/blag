@@ -62,7 +62,7 @@ def writeComment(txt, idu, idp):
 def writeProfile(idu, filename, age, color):
     connection = MongoClient()
     db = connection['data']
-    db.students.update({'id':idu}, {$set: {'age':age, 'color':color, 'filename':filename}})
+    db.students.update({'id':idu}, {'$set': {'age':age, 'color':color, 'filename':filename}})
     """
     conn = sqlite3.connect('data.db')
     cur = conn.cursor()
@@ -77,7 +77,7 @@ def deleteComment(idc):
     connection = MongoClient()
     db = connection['data']
     deleteCommentH(idc)
-    db.comments.update({'cid':{$gt:idc}}, {$inc:{'cid':-1}}, {multi:True})
+    db.comments.update({'cid':{'$gt':idc}}, {'$inc':{'cid':-1}}, {'multi':True})
     """
     conn = sqlite3.connect('data.db')
     cur = conn.cursor()
@@ -106,12 +106,13 @@ def deletePost(idp):
     for comment in res:
         deleteCommentH(comment['cid'])
     allComments = db.comments.find()
+    numComments = db.comments.count()
     i = 0
-    while i < count(allComments):
-        db.comments.update({'cid':allComments[i]['cid']}, {$set:{'cid':i}})
+    while i < numComments:
+        db.comments.update({'cid':allComments[i]['cid']}, {'$set':{'cid':i+1}})
         i += 1
     db.posts.remove({'pid':idp})
-    db.posts.update({'pid':{$gt:idp}}, {$inc:{'pid':-1}}, {multi:True})
+    db.posts.update({'pid':{'$gt':idp}}, {'$inc':{'pid':-1}}, {'multi':True})
     """
     conn = sqlite3.connect('data.db')
     cur = conn.cursor()
@@ -238,7 +239,7 @@ def getAllUsers():
     res = db.users.find()
     all_rows = []
     for doc in res:
-        all_rows.append(doc['name'])
+        all_rows.append([doc['name']])
     return all_rows
     """
     conn = sqlite3.connect('data.db')
@@ -297,8 +298,8 @@ def authenticate(username,password):
 def getUserId(name):
     connection = MongoClient()
     db = connection['data']
-    res = db.users.find({'name':name})
-    if count(res) == 0:
+    num = db.users.count({'name':name})
+    if num == 0:
         return None
     else:
         return res[0]['id']
@@ -330,8 +331,8 @@ def getUserName(uid):
 def addUser(username,password):
     connection = MongoClient()
     db = connection['data']
-    res = db.users.find({'name':username})
-    if count(res) == 0:
+    num = db.users.count({'name':username})
+    if num == 0:
         users = db.users.find()
         IDs = []
         for doc in users:
