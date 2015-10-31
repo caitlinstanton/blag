@@ -8,37 +8,56 @@ from pymongo import MongoClient
 #----------------------------------Writing--------------------------------
 
 def writePost(title, txt, idu):
-    db.posts.insert_one(
-        {
-            "title" :title,
-            "text": txt,
-            "ID": idu,
-        }
-    )
+    connection = MongoClient()
+    db = connection['data']
+    res = db.posts.find()
+    PIDs = []
+    for doc in res:
+        PIDs.append(doc['pid'])
+    if len(PIDs) == 0:
+        idp = 0
+    else:
+        idp = max(PIDs)
+    db.posts.insert({'title':title, 'content':txt, 'uid':idu, 'pid':idp+1})
+    return idp + 1
+    """
+    conn = sqlite3.connect('data.db')
+    cur = conn.cursor()
     q = "SELECT MAX(pid) FROM posts"
-    idp = cur.execute(q).fetchone()[0] #idp is the post id, figure out how to implement it
+    idp = cur.execute(q).fetchone()[0]
     if idp == None:
         idp = 0
     print idp+1
     q = "INSERT INTO posts(title,content,uid,pid) VALUES(?,?,?,?)"
     cur.execute(q,(title,txt,idu,idp+1))
+    conn.commit()
     return idp + 1
+    """
 
 def writeComment(txt, idu, idp):
-    db.comments.insert_one( #make sure this will write to the post with idp and not create a new collection
-        {
-            "idp": idp,
-            "text": txt,
-            "ID": idp,
-        }
-    )
+    connection = MongoClient()
+    db = connection['data']
+    res = db.comment.find()
+    CIDs = []
+    for doc in res:
+        CIDs.append(doc['cid'])
+    if len(CIDs) == 0:
+        idc = 0
+    else:
+        idc = max(CIDs)
+    db.comments.insert({'content':txt, 'cid':idc+1, 'pid':idp, 'uid':idu})
+    """
+    conn = sqlite3.connect('data.db')
+    cur = conn.cursor()
     q = "SELECT MAX(cid) FROM comments"
     idc = cur.execute(q).fetchone()[0]
-    if idc == None: #idc is the comment id, figure out how to implement it
+    if idc == None:
         idc = 0
-    #print idc+1
+    print idc+1
     q = "INSERT INTO comments(content,cid,pid,uid) VALUES(?,?,?,?)"
     cur.execute(q,(txt,idc+1,idp,idu))
+    conn.commit()
+    """
 
 def writeProfile(idu, filename, age, color):
     db.users.insert_one({
@@ -292,7 +311,7 @@ def addUser(username,password):
     if count(res) == 0:
         users = db.users.find()
         IDs = []
-        for doc in res:
+        for doc in users:
             IDs.append(doc['id'])
         if len(IDs) == 0:
             uid = 0
