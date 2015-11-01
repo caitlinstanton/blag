@@ -18,7 +18,7 @@ def writePost(title, txt, idu):
         idp = 0
     else:
         idp = max(PIDs)
-    db.posts.insert({'title':title, 'content':txt, 'uid':idu, 'pid':idp+1})
+    db.posts.insert({'title':title, 'content':txt, 'uid':idu, 'pid':idp+1, 'time':0})
     return idp + 1
     """
     conn = sqlite3.connect('data.db')
@@ -37,7 +37,7 @@ def writePost(title, txt, idu):
 def writeComment(txt, idu, idp):
     connection = MongoClient()
     db = connection['data']
-    res = db.comment.find()
+    res = db.comments.find()
     CIDs = []
     for doc in res:
         CIDs.append(doc['cid'])
@@ -45,7 +45,7 @@ def writeComment(txt, idu, idp):
         idc = 0
     else:
         idc = max(CIDs)
-    db.comments.insert({'content':txt, 'cid':idc+1, 'pid':idp, 'uid':idu})
+    db.comments.insert({'content':txt, 'cid':idc+1, 'pid':idp, 'uid':idu, 'time':0})
     """
     conn = sqlite3.connect('data.db')
     cur = conn.cursor()
@@ -62,7 +62,7 @@ def writeComment(txt, idu, idp):
 def writeProfile(idu, filename, age, color):
     connection = MongoClient()
     db = connection['data']
-    db.students.update({'id':idu}, {'$set': {'age':age, 'color':color, 'filename':filename}})
+    db.users.update_one({'id':idu}, {'$set': {'age':age, 'color':color, 'filename':filename}})
     """
     conn = sqlite3.connect('data.db')
     cur = conn.cursor()
@@ -77,7 +77,7 @@ def deleteComment(idc):
     connection = MongoClient()
     db = connection['data']
     deleteCommentH(idc)
-    db.comments.update({'cid':{'$gt':idc}}, {'$inc':{'cid':-1}}, {'multi':True})
+    db.comments.update_many({'cid':{'$gt':idc}}, {'$inc':{'cid':-1}})
     """
     conn = sqlite3.connect('data.db')
     cur = conn.cursor()
@@ -90,7 +90,7 @@ def deleteComment(idc):
 def deleteCommentH(idc):
     connection = MongoClient()
     db = connection['data']
-    db.comments.remove({'cid':idc})
+    db.comments.delete_one({'cid':idc})
     """
     conn = sqlite3.connect('data.db')
     cur = conn.cursor()
@@ -109,10 +109,10 @@ def deletePost(idp):
     numComments = db.comments.count()
     i = 0
     while i < numComments:
-        db.comments.update({'cid':allComments[i]['cid']}, {'$set':{'cid':i+1}})
+        db.comments.update_many({'cid':allComments[i]['cid']}, {'$set':{'cid':i+1}})
         i += 1
-    db.posts.remove({'pid':idp})
-    db.posts.update({'pid':{'$gt':idp}}, {'$inc':{'pid':-1}}, {'multi':True})
+    db.posts.delete_one({'pid':idp})
+    db.posts.update_many({'pid':{'$gt':idp}}, {'$inc':{'pid':-1}})
     """
     conn = sqlite3.connect('data.db')
     cur = conn.cursor()
@@ -139,7 +139,7 @@ def getCommentsOnPost(idp):
     for doc in res:
         userID = doc['uid']
         resUser = db.users.find({'id':userID})
-        row = [doc['content'], datetime(doc['time'], 'localtime'), resUser[0]['name'], doc['cid'], resUser[0]['filename']]
+        row = [doc['content'], doc['time'], resUser[0]['name'], doc['cid'], resUser[0]['filename']]
         all_rows.append(row)
     return all_rows
     """
@@ -158,10 +158,7 @@ def getComment(cid):
     userID = res[0]['uid']
     userRes = db.users.find({'id':userID})
     username = userRes[0]['name']
-    commentInfo = []
-    for field in res[0]:
-        commentInfo.append(field)
-    commentInfo.append(username)
+    commentInfo = [res[0]['content'], res[0]['cid'], res[0]['pid'], res[0]['uid'], res[0]['time'], username]
     return commentInfo
     """
     conn = sqlite3.connect('data.db')
@@ -196,11 +193,7 @@ def getPost(idp):
     userRes = db.users.find({'id':userID})
     username = userRes[0]['name']
     userfilename = userRes[0]['filename']
-    postInfo = []
-    for field in res[0]:
-        postInfo.append(field)
-    postInfo.append(username)
-    postInfo.append(userfilename)
+    postInfo = [res[0]['title'], res[0]['content'], res[0]['uid'], res[0]['pid'], res[0]['time'], username, userfilename]
     return postInfo
     """
     conn = sqlite3.connect('data.db')
@@ -214,12 +207,12 @@ def getPost(idp):
 def getAllPosts():
     connection = MongoClient()
     db = connection['data']
-    res = db.posts.find().sort({'pid':-1})
+    res = db.posts.find().sort('pid', -1)
     all_rows = []
     for doc in res:
         userID = doc['uid']
-        resUser = db.user.find({'id':userID})
-        row = [doc['content'], doc['pid'], doc['uid'], resUser[0]['name'], doc['title'], datetime(doc['time'], 'localtime'), resUser[0]['filename']]
+        resUser = db.users.find({'id':userID})
+        row = [doc['content'], doc['pid'], doc['uid'], resUser[0]['name'], doc['title'], doc['time'], resUser[0]['filename']]
         all_rows.append(row)
     return all_rows
     """
@@ -298,6 +291,7 @@ def authenticate(username,password):
 def getUserId(name):
     connection = MongoClient()
     db = connection['data']
+    res = db.users.find({'name':name})
     num = db.users.count({'name':name})
     if num == 0:
         return None
