@@ -1,6 +1,0 @@
-Bugs that still need to be fixed:
-- no message displayed when login fails
-- profile page when not logged in does not exist
-- always shows home page as selected when other pages are
-- numbers displayed next to username
-- same text shown twice in editprofile page

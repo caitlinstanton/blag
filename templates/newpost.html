@@ -1,6 +1,10 @@
 {% extends "layout.html" %}
-{% block content %}
 
+{% block newpost %}
+<li id="active"><a id="current" href="{{url_for('makepost')}}">New Post</a></li>
+{% endblock %}
+
+{% block content %}
 <h2>
   <br /> 
   <form method = "POST">

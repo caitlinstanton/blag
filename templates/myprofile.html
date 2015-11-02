@@ -1,9 +1,14 @@
 {% extends "layout.html" %}
-{% block content %}
 
+{% block profile %}
+<li id="active"><a id="current" href="{{url_for('user', username=session['user'])}}">Profile</a></li>
+{% endblock %}
+
+{% block content %}
 {% if error == "" %}
 {% if session['user'] == profile[0] %}
 <h2>My Profile</h2><br />
+<p>Blag was created to be an amazing highschool blog experience</p>
 <form method = 'POST'>
   <input type = "submit" name = "press" value = "Edit Information">
   <br />

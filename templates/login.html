@@ -1,4 +1,13 @@
 {% extends "layout.html" %}
+
+{% block login %}
+<li id="active"><a id="current" href="{{url_for('login')}}">Login</a></li>
+{% endblock %}
+
+{% block error %}
+<h2><font color="red">{{error}}</font></h2>
+{% endblock %}
+
 {% block content %}
 
 <h2>Log In<br/><br/>
