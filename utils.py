@@ -1,4 +1,4 @@
-import sqlite3,hashlib
+import hashlib, datetime
 from pymongo import MongoClient
 
 #Liam is pulling this
@@ -18,7 +18,7 @@ def writePost(title, txt, idu):
         idp = 0
     else:
         idp = max(PIDs)
-    db.posts.insert({'title':title, 'content':txt, 'uid':idu, 'pid':idp+1, 'time':0})
+    db.posts.insert({'title':title, 'content':txt, 'uid':idu, 'pid':idp+1, 'time':str(datetime.datetime.now())[:-7]})
     return idp + 1
     """
     conn = sqlite3.connect('data.db')
@@ -45,7 +45,7 @@ def writeComment(txt, idu, idp):
         idc = 0
     else:
         idc = max(CIDs)
-    db.comments.insert({'content':txt, 'cid':idc+1, 'pid':idp, 'uid':idu, 'time':0})
+    db.comments.insert({'content':txt, 'cid':idc+1, 'pid':idp, 'uid':idu, 'time':str(datetime.datetime.now())[:-7]})
     """
     conn = sqlite3.connect('data.db')
     cur = conn.cursor()

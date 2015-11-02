@@ -1,9 +1,5 @@
 {% extends "layout.html" %}
 
-{% block blogpage %}
-<li id="active"><a id="current" href="{{url_for('home')}}">Blag Blogpage</a></li>
-{% endblock %}
-
 {% block content %}
 <h2>{{postrow[0]}}</h2>
 <p class="info"> {% if postrow[6] %}
