@@ -15,6 +15,6 @@ Originally, this project was created using basic Flask, HTML/CSS, and SQL. In it
 |Liam Daly             | Backend                        |
 
 ##How to Use
-The python module Flask is necessary to use blag. Find out more about Flask <a href="http://flask.pocoo.org/">here</a>. You must also have mongo and pymongo downloaded, which can be done in the command line with the commands 'pip install mongo' and 'pip install pymongo' respectively.
+The python module Flask is necessary to use blag. Find out more about Flask <a href="http://flask.pocoo.org/">here</a>. You must also have mongo and pymongo downloaded, which can be done in the command line with the commands `pip install mongo` and `pip install pymongo` respectively.
 <br>
 Create a local clone of this repository and from the local repo, run `python app.py`. From a web browser, you can access blag from localhost:8000/. Blag's features can be accessed once you are logged in. If you are a first time user, your login credentials should be submitted with the Register button and you can login through the Login button every time thereafter.
